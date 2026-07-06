@@ -10,6 +10,7 @@ from .brokers.dry_run import preview
 from .brokers.ibkr import preview_as_dict as ibkr_preview_as_dict
 from .brokers.schwab_payload import schwab_order_payload
 from .brokers.tastytrade_payload import tastytrade_order_preview
+from .execution import ExecutionPolicy, build_execution_preview
 from .go_api import GammaWizardClient
 from .models import TradeSignal
 from .planner import build_condor_plan, build_vertical_bundle_plan
@@ -69,6 +70,15 @@ def cmd_plan(args: argparse.Namespace) -> int:
     else:
         raise ValueError(f"unsupported strategy: {strategy}")
 
+    if args.execution_mode or args.execution_policy:
+        if args.execution_policy:
+            policy = ExecutionPolicy.load(args.execution_policy, profile=args.profile)
+        else:
+            policy = ExecutionPolicy(profile=args.profile)
+        policy = policy.with_mode(args.execution_mode)
+        print(json.dumps(build_execution_preview(plan, policy), indent=2, sort_keys=True))
+        return 0
+
     if args.format == "json":
         print(preview(plan, json_output=True))
     elif args.format == "schwab":
@@ -108,6 +118,9 @@ def build_parser() -> argparse.ArgumentParser:
     plan.add_argument("--limit-price", type=float, default=0.05, help="Preview limit price for broker payload formats.")
     plan.add_argument("--price-effect", choices=["Debit", "Credit"], default=None, help="TastyTrade preview price effect for mixed plans.")
     plan.add_argument("--format", choices=["text", "json", "schwab", "tastytrade", "ibkr"], default="text")
+    plan.add_argument("--execution-mode", choices=["verticals", "full-package"], default=None, help="Build a dry-run execution preview.")
+    plan.add_argument("--execution-policy", default=None, help="Path to YAML/JSON execution policy.")
+    plan.add_argument("--profile", default="michael_default", help="Execution policy profile name.")
     plan.set_defaults(func=cmd_plan)
     return parser
 

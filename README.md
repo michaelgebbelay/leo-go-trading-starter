@@ -76,6 +76,22 @@ See `docs/strategy-roadmap.md` for the recommended path for Schwab, TastyTrade,
 LP-confirmed CS, and monthly/shadow switch modules.
 See `docs/brokers.md` for broker-specific preview examples.
 
+## Execution Preview
+
+Execution previews are still dry-run only. They do not place live orders.
+
+```bash
+leo-go plan \
+  --sample examples/sample_leoprofit_trade.json \
+  --strategy leoprofit \
+  --execution-policy examples/execution_policy.example.yml \
+  --profile michael_default
+```
+
+The example policy uses `null` TODO values for price limits, so it fails loudly
+until real min-credit/max-debit values are supplied. See `docs/execution.md` for
+vertical-by-vertical versus full-package execution notes and partial-fill risks.
+
 ## Copy Into Another Project
 
 If you do not want this as its own dependency, vendor the package folder into an

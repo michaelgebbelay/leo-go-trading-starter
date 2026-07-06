@@ -1,0 +1,16 @@
+profiles:
+  michael_default:
+    execution_mode: verticals
+    min_credit_per_vertical: null   # TODO: fill before execution preview
+    min_credit_full_package: null   # TODO: fill before execution preview
+    max_debit_per_vertical: null    # TODO: fill before execution preview
+    max_debit_full_package: null    # TODO: fill before execution preview
+    price_step: null                # TODO: fill before execution preview
+    max_attempts: null              # TODO: fill before execution preview
+    vertical_sequence:
+      - put
+      - call
+    stop_if_first_vertical_fails: true
+    require_manual_review_after_partial_fill: true
+    max_contracts_per_leg: null     # TODO: fill before execution preview
+    reject_stale_signal_minutes: null # TODO: fill before execution preview
