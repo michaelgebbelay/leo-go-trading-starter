@@ -78,7 +78,26 @@ See `docs/brokers.md` for broker-specific preview examples.
 
 ## Execution Preview
 
-Execution previews are still dry-run only. They do not place live orders.
+The starter can preview two execution styles:
+
+- `full-package`: keep the full iron condor or vertical bundle together as one
+  complex order preview.
+- `verticals`: split the structure into individual put/call vertical previews.
+
+The default profile uses `verticals`, which matches a common manual workflow:
+execute one vertical at a time, with user-defined debit/credit limits.
+
+Important: vertical-by-vertical execution can create a temporary partial
+position if one side fills and the other does not. Full-package execution keeps
+the structure together but may be harder to fill or require broker-specific
+routing.
+
+Pricing is configurable. Users should define the maximum debit they are willing
+to pay for buy-premium structures; the minimum credit they are willing to
+collect for sell-premium structures; retry step size and max attempts; max
+contract size; and stale-signal rules.
+
+This repo still does not place live orders.
 
 ```bash
 leo-go plan \

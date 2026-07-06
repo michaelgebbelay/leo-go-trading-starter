@@ -4,6 +4,15 @@ This project still does not place live orders. The execution layer is an
 education and planning layer that turns a broker-neutral `StrategyPlan` into a
 dry-run execution sequence.
 
+The starter can preview two execution styles:
+
+- `full-package`: keep the full iron condor or vertical bundle together as one
+  complex order preview.
+- `verticals`: split the structure into individual put/call vertical previews.
+
+The default example profile uses `verticals`, which matches a common manual
+workflow: execute one vertical at a time, with user-defined debit/credit limits.
+
 ## Full-Package Execution
 
 Full-package execution sends every leg as one package. For a four-leg IC, this
@@ -57,6 +66,9 @@ Execution policy values are intentionally explicit:
   order.
 - `price_step`: price movement per retry/attempt.
 - `max_attempts`: maximum previewed order attempts.
+- `max_contracts_per_leg`: largest allowed leg size for the preview.
+- `reject_stale_signal_minutes`: signal age threshold users can enforce in their
+  own broker workflow.
 
 The example policy uses `null` placeholders. That is safe for docs, but not for
 execution preview. If a preview needs a credit/debit value and the policy still
