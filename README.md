@@ -1,12 +1,13 @@
-# Leo GO Trading Starter
+# Leo GO Trading
 
-Small, broker-agnostic Python starter kit for reading Leo/GammaWizard GO API trade
-signals and turning them into reviewable SPX option tickets.
+Leo GO Trading is a working, shareable Python version of the Leo GO trading
+workflow. It fetches GO API signals, parses LeoProfit, ConstantStable, and Novix
+trade fields, builds SPX option structures, and outputs Schwab/TastyTrade-ready
+planning payloads that users can adapt to their own broker setup.
 
-This project is intentionally a starter kit, not a black-box trading bot. It
-defaults to dry-run output and refuses to place live orders. Wire broker-specific
-execution only after you have reviewed the generated ticket, tested in paper
-trading, and accepted the risk.
+This public version excludes private credentials, account IDs, tokens, and
+personal live-submit wiring. Users can plug the broker adapters and execution
+policy into their own account setup.
 
 ## What It Does
 
@@ -17,11 +18,11 @@ trading, and accepted the risk.
   `Cat1`, and `Cat2`.
 - Builds ConstantStable / Novix style 5-wide vertical bundle tickets from
   `LeftGo` and `RightGo`.
-- Outputs broker-neutral JSON, a human-readable ticket, and optional Schwab-style
-  order payload previews.
-- Outputs TastyTrade-style ticket previews.
+- Outputs broker-neutral JSON, a human-readable ticket, and Schwab-style
+  planning payloads.
+- Outputs TastyTrade-style planning payloads.
 - Includes an IBKR adapter placeholder showing the fields you need to qualify in
-  TWS/Gateway before live execution.
+  TWS/Gateway for combo routing.
 
 ## Quick Start
 
@@ -52,7 +53,7 @@ Fetch a signal:
 leo-go fetch --endpoint rapi/GetLeoProfit
 ```
 
-Build a dry-run ticket:
+Build a ticket:
 
 ```bash
 leo-go plan --endpoint rapi/GetLeoProfit --qty 1
@@ -78,26 +79,21 @@ See `docs/brokers.md` for broker-specific preview examples.
 
 ## Execution Preview
 
-The starter can preview two execution styles:
+The repo supports two execution styles:
 
 - `full-package`: keep the full iron condor or vertical bundle together as one
   complex order preview.
 - `verticals`: split the structure into individual put/call vertical previews.
 
-The default profile uses `verticals`, which matches a common manual workflow:
-execute one vertical at a time, with user-defined debit/credit limits.
+The default example uses `verticals`, which matches Michael's workflow: execute
+one vertical at a time, with user-defined debit/credit limits.
 
-Important: vertical-by-vertical execution can create a temporary partial
-position if one side fills and the other does not. Full-package execution keeps
-the structure together but may be harder to fill or require broker-specific
-routing.
+Vertical-by-vertical execution can create a temporary partial position if one
+side fills and the other does not. Full-package execution keeps the structure
+together but may be harder to fill or require broker-specific routing.
 
-Pricing is configurable. Users should define the maximum debit they are willing
-to pay for buy-premium structures; the minimum credit they are willing to
-collect for sell-premium structures; retry step size and max attempts; max
-contract size; and stale-signal rules.
-
-This repo still does not place live orders.
+Debit/credit limits, retry steps, max attempts, contract size, and stale-signal
+rules are configurable.
 
 ```bash
 leo-go plan \
@@ -125,17 +121,13 @@ your bot responsible for imports, scheduling, secrets, and broker execution.
 
 ## GitHub Actions
 
-The included smoke-test workflow only runs tests. It does not fetch GO API data or
-place orders.
+The included smoke-test workflow runs the test suite.
 
 For your own private workflow that fetches GO API data, store credentials as
 GitHub repository secrets:
 
 - `GW_TOKEN`, or
 - `GW_EMAIL` and `GW_PASSWORD`
-
-Do not commit `.env`, token files, account numbers, broker app secrets, or order
-logs that contain account identifiers.
 
 ## Environment Variables
 
@@ -147,17 +139,12 @@ logs that contain account identifiers.
 | `GW_PASSWORD` | GO API login password. |
 | `LEO_ENDPOINT` | Default endpoint for the CLI. Defaults to `rapi/GetLeoProfit`. |
 
-## Safety Notes
+## Broker Setup Notes
 
-- This is educational automation scaffolding, not financial advice.
-- Generated orders may be wrong for your account, broker, permissions, data feed,
-  time zone, margin model, or option symbol convention.
-- Start with read-only fetches and dry-run tickets.
-- Paper trade before live trading.
-- Add your own guardrails for market hours, duplicate orders, position overlap,
-  max loss, max quantity, stale signals, and account-specific margin checks.
-- TastyTrade option symbols should be resolved from the user's own option-chain
-  endpoint before live submission; previews include portable OCC candidates only.
+- Add account-specific guardrails for market hours, duplicate orders, position
+  overlap, max loss, max quantity, stale signals, and margin checks.
+- Resolve TastyTrade option symbols from the user's own option-chain endpoint;
+  public payloads include portable OCC candidates.
 
 ## License
 

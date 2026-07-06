@@ -1,4 +1,4 @@
-"""Reusable pieces for GO API signal fetching and dry-run trade planning."""
+"""Reusable pieces for GO API signal fetching and SPX trade planning."""
 
 from .models import TradeSignal
 from .execution import ExecutionPolicy, build_execution_preview

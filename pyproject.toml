@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "leo-go-trading-starter"
 version = "0.1.0"
-description = "Starter kit for GO API signal fetching and dry-run SPX option tickets."
+description = "Shareable Python workflow for GO API signal fetching and SPX option planning payloads."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }

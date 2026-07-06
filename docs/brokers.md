@@ -1,7 +1,6 @@
 # Broker Adapter Notes
 
-The public starter kit has one strategy layer and multiple broker presentation
-layers:
+Leo GO Trading has one strategy layer and multiple broker presentation layers:
 
 ```text
 GO API signal -> StrategyPlan -> Schwab / TastyTrade / IBKR adapter
@@ -11,11 +10,9 @@ GO API signal -> StrategyPlan -> Schwab / TastyTrade / IBKR adapter
 
 | Broker | Status | Command |
 | --- | --- | --- |
-| Schwab | Payload preview for non-mixed complex orders | `--format schwab` |
-| TastyTrade | Ticket preview for complex orders | `--format tastytrade` |
-| IBKR | Contract qualification preview | `--format ibkr` |
-
-All broker outputs are preview-only. They do not submit orders.
+| Schwab | Planning payload for non-mixed complex orders | `--format schwab` |
+| TastyTrade | Planning payload for complex orders | `--format tastytrade` |
+| IBKR | Contract qualification payload | `--format ibkr` |
 
 ## Schwab
 
@@ -30,8 +27,9 @@ leo-go plan \
 ```
 
 Mixed ConstantStable/Novix risk-reversal tickets currently raise an error in the
-Schwab payload preview. A real adapter should use live quotes to decide whether
-the combined package routes as net debit, net credit, or split verticals.
+Schwab payload builder. A Schwab-specific adapter should use live quotes to
+decide whether the combined package routes as net debit, net credit, or split
+verticals.
 
 ## TastyTrade
 
@@ -56,7 +54,7 @@ leo-go plan \
   --price-effect Credit
 ```
 
-Before live use, users need their own:
+For account-specific use, users provide their own:
 
 - TastyTrade login/token refresh.
 - Account selection.
@@ -69,5 +67,4 @@ Before live use, users need their own:
 
 ## IBKR
 
-The IBKR preview intentionally stops before creating an order. IBKR combo orders
-need contract IDs from the user's own TWS/Gateway session.
+IBKR combo orders need contract IDs from the user's own TWS/Gateway session.

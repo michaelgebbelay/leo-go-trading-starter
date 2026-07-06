@@ -1,18 +1,17 @@
 # Strategy Roadmap
 
-The starter kit should stay modular: strategies normalize GO API signals into
-broker-neutral tickets, while broker adapters handle order entry for each user's
-account.
+The workflow stays modular: strategies normalize GO API signals into
+broker-neutral tickets, while broker adapters handle account-specific routing.
 
 ## Suggested Public Packaging
 
 | Package Area | Status | Notes |
 | --- | --- | --- |
-| LeoProfit | Starter-supported | IC-only Cat1/Cat2 signals. Generates dry-run ratio-condor tickets. |
-| ConstantStable | Starter-supported | LeftGo/RightGo signals. Generates 5-wide put/call vertical bundle tickets. |
-| Novix | Starter-supported | Same LeftGo/RightGo interpretation as CS. Generates 5-wide bundle tickets. |
-| Schwab adapter | Preview-only | Converts non-mixed plans to Schwab-style payloads. Live submit should remain user-owned. |
-| TastyTrade adapter | Preview-supported | Add optional live submit later behind explicit opt-in. |
+| LeoProfit | Supported | IC-only Cat1/Cat2 signals. Generates ratio-condor tickets. |
+| ConstantStable | Supported | LeftGo/RightGo signals. Generates 5-wide put/call vertical bundle tickets. |
+| Novix | Supported | Same LeftGo/RightGo interpretation as CS. Generates 5-wide bundle tickets. |
+| Schwab adapter | Payload-supported | Converts non-mixed plans to Schwab-style payloads. |
+| TastyTrade adapter | Payload-supported | Converts plans to TastyTrade-style payloads. |
 | LP-confirmed CS side extraction | Separate advanced module | Requires fetching both CS and LeoProfit, schema validation, and structure-aware side extraction. |
 | Monthly/streak switch | Research/shadow module | Should not be presented as production-ready. Output a recommendation/shadow state only. |
 
@@ -85,9 +84,9 @@ Treat this as a shadow/research feature:
 leo-go shadow-switch --state state.json --cs-endpoint ... --lp-endpoint ...
 ```
 
-It should produce "active model would be X" state and logs, not live orders by
-default. The current production doctrine keeps CS baseline as the production
-default; switch rules need fresh forward evidence before being promoted.
+It should produce "active model would be X" state and logs. The current
+production doctrine keeps CS baseline as the production default; switch rules
+need fresh forward evidence before being promoted.
 
 ## Broker Adapters
 
@@ -99,10 +98,9 @@ GO API -> TradeSignal -> StrategyPlan -> BrokerAdapter
 
 Broker adapters can then expose:
 
-- `preview`: safe text/JSON/payload output.
-- `paper`: optional paper-trade submit if the broker supports it.
-- `live`: explicit opt-in only, ideally requiring a command flag and environment
-  confirmation such as `LEO_GO_ALLOW_LIVE=1`.
+- `payload`: text/JSON/broker-shaped payload output.
+- `paper`: paper-trade submit if the broker supports it.
+- `live`: account-specific submit wiring.
 
 Near-term adapter checklist:
 
@@ -110,5 +108,5 @@ Near-term adapter checklist:
   ladder, token refresh docs.
 - TastyTrade: quote lookup, complex order submit, cancel/replace ladder, token
   refresh docs.
-- IBKR: qualification preview first; live combos require local TWS/Gateway and
+- IBKR: qualification payload first; combos require local TWS/Gateway and
   user-specific contract IDs.
