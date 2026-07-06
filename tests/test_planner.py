@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 from leo_go_trading.models import TradeSignal
+from leo_go_trading.brokers.schwab_payload import schwab_order_payload
 from leo_go_trading.brokers.tastytrade_payload import tastytrade_order_preview
 from leo_go_trading.cli import load_env_file
 from leo_go_trading.planner import build_condor_plan, build_vertical_bundle_plan
@@ -58,6 +59,30 @@ def test_constantstable_risk_reversal_plan_uses_left_right_go() -> None:
     assert [leg.quantity for leg in plan.legs] == [3, 3, 3, 3]
 
 
+def test_constantstable_rejects_zero_leftgo() -> None:
+    payload = {"Trade": [{"TDate": "2026-07-06", "Limit": 6200, "CLimit": 6280, "LeftGo": 0, "RightGo": 0.37}]}
+    signal = TradeSignal.from_payload(payload, endpoint="rapi/GetUltraPureConstantStable")
+
+    try:
+        build_vertical_bundle_plan(signal)
+    except ValueError as exc:
+        assert "nonzero LeftGo and RightGo" in str(exc)
+    else:
+        raise AssertionError("expected ValueError")
+
+
+def test_novix_rejects_zero_rightgo() -> None:
+    payload = {"Trade": [{"TDate": "2026-07-06", "Limit": 6200, "CLimit": 6280, "LeftGo": 0.28, "RightGo": 0}]}
+    signal = TradeSignal.from_payload(payload, endpoint="rapi/GetNovix")
+
+    try:
+        build_vertical_bundle_plan(signal)
+    except ValueError as exc:
+        assert "nonzero LeftGo and RightGo" in str(exc)
+    else:
+        raise AssertionError("expected ValueError")
+
+
 def test_novix_full_long_ic_plan() -> None:
     payload = json.loads(Path("examples/sample_novix_trade.json").read_text())
     signal = TradeSignal.from_payload(payload, endpoint="rapi/GetNovix")
@@ -79,6 +104,17 @@ def test_tastytrade_preview_infers_debit_for_long_ic() -> None:
     assert preview["legs"][0]["action"] == "Buy to Open"
     assert preview["legs"][0]["symbol"] == "SPXW260706P06200000"
     assert "symbol-note" in preview["metadata"]
+
+
+def test_schwab_preview_rejects_ratio_condor() -> None:
+    plan = build_condor_plan(sample_signal(), quantity=1, call_multiplier=2)
+
+    try:
+        schwab_order_payload(plan, limit_price=0.3)
+    except ValueError as exc:
+        assert "Schwab preview for ratio condors is not validated" in str(exc)
+    else:
+        raise AssertionError("expected ValueError")
 
 
 def test_leoprofit_planner_rejects_leftgo_signal() -> None:

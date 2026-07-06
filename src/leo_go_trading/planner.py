@@ -127,6 +127,8 @@ def build_vertical_bundle_plan(
     """
     if signal.left_go is None or signal.right_go is None:
         raise ValueError("ConstantStable/Novix planning requires LeftGo and RightGo.")
+    if signal.left_go == 0 or signal.right_go == 0:
+        raise ValueError("ConstantStable/Novix planning requires nonzero LeftGo and RightGo.")
 
     qty = max(1, int(quantity))
     vert_w = _round_to_5(width)

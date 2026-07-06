@@ -14,6 +14,11 @@ def schwab_order_payload(plan: StrategyPlan, limit_price: float) -> dict:
             "Mixed debit/credit CS or Novix plans need quote-aware routing. "
             "Preview them as text/JSON, or split the put and call sides in your broker adapter."
         )
+    if plan.structure == "CONDOR_RATIO":
+        raise ValueError(
+            "Schwab preview for ratio condors is not validated. "
+            "Use text/json preview or implement a broker-specific custom strategy."
+        )
     return {
         "orderType": plan.order_type,
         "session": "NORMAL",
