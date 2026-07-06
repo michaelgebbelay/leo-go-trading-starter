@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from leo_go_trading.planner import StrategyPlan
+from leo_go_trading.symbols import compact_osi, tastytrade_symbol_candidates
 
 
 def _tt_action(action: str) -> str:
@@ -45,7 +46,7 @@ def tastytrade_order_preview(
         "legs": [
             {
                 "instrument-type": "Equity Option",
-                "symbol": leg.symbol.strip(),
+                "symbol": compact_osi(leg.symbol),
                 "action": _tt_action(leg.action),
                 "quantity": leg.quantity,
             }
@@ -55,5 +56,10 @@ def tastytrade_order_preview(
             "strategy": plan.structure,
             "source-endpoint": plan.endpoint,
             "preview-only": True,
+            "symbol-note": "Verify or resolve exact TastyTrade option symbols from the option-chain endpoint before live submission.",
+            "symbol-candidates": {
+                leg.symbol: tastytrade_symbol_candidates(leg.symbol)
+                for leg in plan.legs
+            },
         },
     }

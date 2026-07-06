@@ -15,6 +15,21 @@ from .models import TradeSignal
 from .planner import build_condor_plan, build_vertical_bundle_plan
 
 
+def load_env_file(path: str = ".env") -> None:
+    env_path = Path(path)
+    if not env_path.exists():
+        return
+    for raw_line in env_path.read_text().splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        key = key.strip()
+        value = value.strip().strip('"').strip("'")
+        if key and key not in os.environ:
+            os.environ[key] = value
+
+
 def _load_signal(args: argparse.Namespace) -> TradeSignal:
     if args.sample:
         payload = json.loads(Path(args.sample).read_text())
@@ -37,6 +52,8 @@ def cmd_plan(args: argparse.Namespace) -> int:
         strategy = "leoprofit" if signal.schema == "LeoProfit-like" else "vertical-bundle"
 
     if strategy == "leoprofit":
+        if signal.schema != "LeoProfit-like":
+            raise ValueError(f"strategy leoprofit requires a LeoProfit-like Cat1/Cat2 signal, got {signal.schema}.")
         plan = build_condor_plan(
             signal,
             quantity=args.qty,
@@ -46,6 +63,8 @@ def cmd_plan(args: argparse.Namespace) -> int:
             side_override=args.side,
         )
     elif strategy in {"constantstable", "novix", "vertical-bundle"}:
+        if signal.schema not in {"ConstantStable-like", "Novix-like"}:
+            raise ValueError(f"strategy {strategy} requires a LeftGo/RightGo signal, got {signal.schema}.")
         plan = build_vertical_bundle_plan(signal, quantity=args.qty, width=args.width)
     else:
         raise ValueError(f"unsupported strategy: {strategy}")
@@ -94,6 +113,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: list[str] | None = None) -> int:
+    load_env_file()
     parser = build_parser()
     args = parser.parse_args(argv)
     try:

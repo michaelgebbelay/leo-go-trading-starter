@@ -18,3 +18,17 @@ def osi_symbol(root: str, expiry: date, right: str, strike: float) -> str:
 
 def strike_from_osi(symbol: str) -> float:
     return int(symbol[-8:]) / 1000.0
+
+
+def compact_osi(symbol: str) -> str:
+    return (symbol or "").strip().replace(" ", "")
+
+
+def tastytrade_symbol_candidates(symbol: str) -> list[str]:
+    compact = compact_osi(symbol)
+    candidates = []
+    if compact:
+        candidates.append(compact)
+        if compact.startswith("SPXW"):
+            candidates.append("SPX" + compact[4:])
+    return list(dict.fromkeys(candidates))

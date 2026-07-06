@@ -5,6 +5,7 @@ from pathlib import Path
 
 from leo_go_trading.models import TradeSignal
 from leo_go_trading.brokers.tastytrade_payload import tastytrade_order_preview
+from leo_go_trading.cli import load_env_file
 from leo_go_trading.planner import build_condor_plan, build_vertical_bundle_plan
 
 
@@ -76,3 +77,28 @@ def test_tastytrade_preview_infers_debit_for_long_ic() -> None:
 
     assert preview["price-effect"] == "Debit"
     assert preview["legs"][0]["action"] == "Buy to Open"
+    assert preview["legs"][0]["symbol"] == "SPXW260706P06200000"
+    assert "symbol-note" in preview["metadata"]
+
+
+def test_leoprofit_planner_rejects_leftgo_signal() -> None:
+    payload = json.loads(Path("examples/sample_constantstable_trade.json").read_text())
+    signal = TradeSignal.from_payload(payload, endpoint="rapi/GetUltraPureConstantStable")
+
+    try:
+        build_condor_plan(signal)
+    except ValueError as exc:
+        assert "Cat1 and Cat2" in str(exc)
+    else:
+        raise AssertionError("expected ValueError")
+
+
+def test_load_env_file_does_not_override_existing_env(tmp_path, monkeypatch) -> None:
+    env_file = tmp_path / ".env"
+    env_file.write_text("GW_BASE=https://example.invalid\nGW_TOKEN=from-file\n")
+    monkeypatch.setenv("GW_TOKEN", "already-set")
+
+    load_env_file(str(env_file))
+
+    assert "example.invalid" in __import__("os").environ["GW_BASE"]
+    assert __import__("os").environ["GW_TOKEN"] == "already-set"

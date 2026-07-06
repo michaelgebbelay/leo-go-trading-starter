@@ -68,6 +68,8 @@ Required behavior:
 - Validate the CS payload has `LeftGo` and `RightGo`.
 - Validate the LP payload has `Cat1` and `Cat2` and no required dependence on
   CS-style columns.
+- Refuse schema mismatches loudly; never silently treat a CS/Novix payload as
+  LeoProfit or vice versa.
 - If CS and LP are the same IC, trade the full CS IC.
 - If CS and LP are opposite ICs, skip.
 - If CS is risk-reversal and LP is long IC, trade only the CS buy-premium side.

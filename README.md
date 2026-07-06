@@ -36,13 +36,14 @@ pip install -e ".[dev]"
 cp .env.example .env
 ```
 
-Then set one of these auth methods:
+The CLI auto-loads `.env` from the current directory. Fill in one of these auth
+methods:
 
 ```bash
-export GW_TOKEN="paste-token-here"
-# or
-export GW_EMAIL="you@example.com"
-export GW_PASSWORD="your-password"
+GW_TOKEN="paste-token-here"
+# or:
+GW_EMAIL="you@example.com"
+GW_PASSWORD="your-password"
 ```
 
 Fetch a signal:
@@ -120,6 +121,8 @@ logs that contain account identifiers.
 - Paper trade before live trading.
 - Add your own guardrails for market hours, duplicate orders, position overlap,
   max loss, max quantity, stale signals, and account-specific margin checks.
+- TastyTrade option symbols should be resolved from the user's own option-chain
+  endpoint before live submission; previews include portable OCC candidates only.
 
 ## License
 

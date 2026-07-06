@@ -61,6 +61,7 @@ Before live use, users need their own:
 - TastyTrade login/token refresh.
 - Account selection.
 - OCC symbol verification.
+- Option-chain symbol resolution for exact TastyTrade order symbols.
 - Quote lookup.
 - Buying-power and max-loss checks.
 - Duplicate-order and existing-position checks.

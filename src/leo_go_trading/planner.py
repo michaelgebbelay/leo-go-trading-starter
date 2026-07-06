@@ -50,6 +50,8 @@ def build_condor_plan(
     side_override: str = "AUTO",
     root: str = "SPXW",
 ) -> StrategyPlan:
+    if signal.cat1 is None or signal.cat2 is None:
+        raise ValueError("LeoProfit planning requires Cat1 and Cat2.")
     side = signal.side
     override = (side_override or "AUTO").upper()
     if override in {"CREDIT", "DEBIT"}:
