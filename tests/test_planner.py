@@ -4,7 +4,8 @@ import json
 from pathlib import Path
 
 from leo_go_trading.models import TradeSignal
-from leo_go_trading.planner import build_condor_plan
+from leo_go_trading.brokers.tastytrade_payload import tastytrade_order_preview
+from leo_go_trading.planner import build_condor_plan, build_vertical_bundle_plan
 
 
 def sample_signal() -> TradeSignal:
@@ -37,3 +38,41 @@ def test_nested_trade_payload_is_supported() -> None:
     assert signal.side == "CREDIT"
     assert signal.short_put == 6200
     assert signal.short_call == 6280
+
+
+def test_constantstable_risk_reversal_plan_uses_left_right_go() -> None:
+    payload = json.loads(Path("examples/sample_constantstable_trade.json").read_text())
+    signal = TradeSignal.from_payload(payload, endpoint="rapi/GetUltraPureConstantStable")
+    plan = build_vertical_bundle_plan(signal, quantity=3)
+
+    assert signal.schema == "ConstantStable-like"
+    assert plan.structure == "RR_LONG_CALL"
+    assert plan.order_type == "MIXED"
+    assert [leg.action for leg in plan.legs] == [
+        "SELL_TO_OPEN",
+        "BUY_TO_OPEN",
+        "BUY_TO_OPEN",
+        "SELL_TO_OPEN",
+    ]
+    assert [leg.quantity for leg in plan.legs] == [3, 3, 3, 3]
+
+
+def test_novix_full_long_ic_plan() -> None:
+    payload = json.loads(Path("examples/sample_novix_trade.json").read_text())
+    signal = TradeSignal.from_payload(payload, endpoint="rapi/GetNovix")
+    plan = build_vertical_bundle_plan(signal, quantity=1)
+
+    assert signal.schema == "Novix-like"
+    assert plan.structure == "IC_LONG"
+    assert plan.order_type == "NET_DEBIT"
+    assert [leg.strike for leg in plan.legs] == [6200.0, 6195.0, 6280.0, 6285.0]
+
+
+def test_tastytrade_preview_infers_debit_for_long_ic() -> None:
+    payload = json.loads(Path("examples/sample_novix_trade.json").read_text())
+    signal = TradeSignal.from_payload(payload, endpoint="rapi/GetNovix")
+    plan = build_vertical_bundle_plan(signal, quantity=1)
+    preview = tastytrade_order_preview(plan, limit_price=1.1)
+
+    assert preview["price-effect"] == "Debit"
+    assert preview["legs"][0]["action"] == "Buy to Open"

@@ -1,0 +1,12 @@
+{
+  "Trade": [
+    {
+      "TDate": "2026-07-06",
+      "Limit": 6200,
+      "CLimit": 6280,
+      "LeftGo": -0.41,
+      "RightGo": 0.37,
+      "VixOne": 0.22
+    }
+  ]
+}

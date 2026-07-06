@@ -9,6 +9,11 @@ def schwab_order_payload(plan: StrategyPlan, limit_price: float) -> dict:
     This function does not submit anything. It only converts the broker-neutral
     plan into the shape expected by Schwab order endpoints.
     """
+    if plan.order_type == "MIXED":
+        raise ValueError(
+            "Mixed debit/credit CS or Novix plans need quote-aware routing. "
+            "Preview them as text/JSON, or split the put and call sides in your broker adapter."
+        )
     return {
         "orderType": plan.order_type,
         "session": "NORMAL",

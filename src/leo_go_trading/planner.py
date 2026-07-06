@@ -109,3 +109,69 @@ def build_condor_plan(
         legs=legs,
         source_trade=signal.raw,
     )
+
+
+def build_vertical_bundle_plan(
+    signal: TradeSignal,
+    quantity: int = 1,
+    width: int = 5,
+    root: str = "SPXW",
+) -> StrategyPlan:
+    """Build a 5-wide CS/Novix-style put+call vertical bundle.
+
+    ConstantStable and Novix use independent put/call directions from
+    LeftGo/RightGo. The result may be a full long IC, full short IC, or mixed
+    risk-reversal style structure.
+    """
+    if signal.left_go is None or signal.right_go is None:
+        raise ValueError("ConstantStable/Novix planning requires LeftGo and RightGo.")
+
+    qty = max(1, int(quantity))
+    vert_w = _round_to_5(width)
+    short_put = float(signal.short_put)
+    short_call = float(signal.short_call)
+
+    put_buy = signal.left_go > 0
+    call_buy = signal.right_go > 0
+
+    if put_buy:
+        put_legs = (
+            OptionLeg("BUY_TO_OPEN", osi_symbol(root, signal.tdate, "P", short_put), qty, "P", short_put, signal.tdate.isoformat()),
+            OptionLeg("SELL_TO_OPEN", osi_symbol(root, signal.tdate, "P", short_put - vert_w), qty, "P", short_put - vert_w, signal.tdate.isoformat()),
+        )
+    else:
+        put_legs = (
+            OptionLeg("SELL_TO_OPEN", osi_symbol(root, signal.tdate, "P", short_put), qty, "P", short_put, signal.tdate.isoformat()),
+            OptionLeg("BUY_TO_OPEN", osi_symbol(root, signal.tdate, "P", short_put - vert_w), qty, "P", short_put - vert_w, signal.tdate.isoformat()),
+        )
+
+    if call_buy:
+        call_legs = (
+            OptionLeg("BUY_TO_OPEN", osi_symbol(root, signal.tdate, "C", short_call), qty, "C", short_call, signal.tdate.isoformat()),
+            OptionLeg("SELL_TO_OPEN", osi_symbol(root, signal.tdate, "C", short_call + vert_w), qty, "C", short_call + vert_w, signal.tdate.isoformat()),
+        )
+    else:
+        call_legs = (
+            OptionLeg("SELL_TO_OPEN", osi_symbol(root, signal.tdate, "C", short_call), qty, "C", short_call, signal.tdate.isoformat()),
+            OptionLeg("BUY_TO_OPEN", osi_symbol(root, signal.tdate, "C", short_call + vert_w), qty, "C", short_call + vert_w, signal.tdate.isoformat()),
+        )
+
+    if put_buy and call_buy:
+        order_type = "NET_DEBIT"
+    elif (not put_buy) and (not call_buy):
+        order_type = "NET_CREDIT"
+    else:
+        order_type = "MIXED"
+
+    return StrategyPlan(
+        endpoint=signal.endpoint,
+        side=signal.side,
+        order_type=order_type,
+        structure=signal.structure,
+        quantity=qty,
+        call_multiplier=1,
+        put_width=vert_w,
+        call_width=vert_w,
+        legs=put_legs + call_legs,
+        source_trade=signal.raw,
+    )

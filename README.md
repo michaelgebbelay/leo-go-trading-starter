@@ -15,8 +15,11 @@ trading, and accepted the risk.
 - Extracts the latest trade row from common GO API response shapes.
 - Builds an SPXW iron-condor style ticket from `TDate`, `Limit`, `CLimit`,
   `Cat1`, and `Cat2`.
+- Builds ConstantStable / Novix style 5-wide vertical bundle tickets from
+  `LeftGo` and `RightGo`.
 - Outputs broker-neutral JSON, a human-readable ticket, and optional Schwab-style
   order payload previews.
+- Outputs TastyTrade-style ticket previews.
 - Includes an IBKR adapter placeholder showing the fields you need to qualify in
   TWS/Gateway before live execution.
 
@@ -54,11 +57,23 @@ Build a dry-run ticket:
 leo-go plan --endpoint rapi/GetLeoProfit --qty 1
 ```
 
+Build a ConstantStable or Novix ticket:
+
+```bash
+leo-go plan --endpoint rapi/GetUltraPureConstantStable --strategy constantstable --qty 1
+leo-go plan --endpoint rapi/GetNovix --strategy novix --qty 1
+```
+
 Try the included sample without credentials:
 
 ```bash
 leo-go plan --sample examples/sample_leoprofit_trade.json --qty 1
+leo-go plan --sample examples/sample_constantstable_trade.json --strategy constantstable --qty 1
 ```
+
+See `docs/strategy-roadmap.md` for the recommended path for Schwab, TastyTrade,
+LP-confirmed CS, and monthly/shadow switch modules.
+See `docs/brokers.md` for broker-specific preview examples.
 
 ## Copy Into Another Project
 
