@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "leo-go-trading-starter"
+version = "0.1.0"
+description = "Starter kit for GO API signal fetching and dry-run SPX option tickets."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+dependencies = [
+  "requests>=2.31",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8",
+]
+ibkr = [
+  "ib-insync>=0.9.86",
+]
+
+[project.scripts]
+leo-go = "leo_go_trading.cli:main"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
